@@ -4,7 +4,7 @@ import React from 'react'
 export default function leaderboard() {
   return (
     <View>
-      <Text>leaderboard</Text>
+      <Text>Leaderboard</Text>
     </View>
   )
 }
