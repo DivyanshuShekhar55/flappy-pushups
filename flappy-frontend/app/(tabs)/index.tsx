@@ -1,23 +1,40 @@
-import { Image, StyleSheet, Platform, ImageBackground } from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Platform,
+  ImageBackground,
+  Dimensions,
+  useWindowDimensions,
+  View
+} from "react-native";
+import { useState } from "react";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { View } from 'react-native-reanimated/lib/typescript/Animated';
+import { GameManager } from "@/managers/GameManager";
+import { BirdManager } from "@/managers/BirdManager";
+const { width, height } = useWindowDimensions();
+const bird = new BirdManager(width);
+const game = new GameManager(false, bird);
 
 export default function HomeScreen() {
+  
+  const [gameOn, setGameOn] = useState(true)
+
   return (
-    <ImageBackground source={require('../../assets/images/background-day.png')} style={styles.background}>
-      
+    <ImageBackground
+      source={require("../../assets/images/background-day.png")}
+      style={styles.background}
+    >
+      <View style={styles.bird__container}>
+        <Image source={require("../../assets/images/redbird-upflap.png")} />
+      </View>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   stepContainer: {
@@ -29,11 +46,16 @@ const styles = StyleSheet.create({
     width: 290,
     bottom: 0,
     left: 0,
-    position: 'absolute',
+    position: "absolute",
   },
-  background:{
-    flex:1,
-    resizeMode:'cover',
-    justifyContent:'center'
+  background: {
+    flex: 1,
+    resizeMode: "cover",
+    justifyContent: "center",
+  },
+  bird__container:{
+    position:'absolute',
+    left:width/4,
+    height:height/2
   }
 });
