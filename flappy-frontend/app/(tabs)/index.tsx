@@ -5,19 +5,33 @@ import {
   ImageBackground,
   Dimensions,
   useWindowDimensions,
-  View
+  View,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { GameManager } from "@/managers/GameManager";
 import { BirdManager } from "@/managers/BirdManager";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 const { width, height } = useWindowDimensions();
 const bird = new BirdManager(width);
 const game = new GameManager(false, bird);
 
 export default function HomeScreen() {
+  const [gameOn, setGameOn] = useState(true);
+  const pipeX = useSharedValue(width);
+
+  const animatedStyles = useAnimatedStyle(() => ({
+    transform: [{ translateX: pipeX.value }],
+  }));
+
+  useEffect(() => {
+    game.movePipe(width, 2000, pipeX)
+
+  }, [])
   
-  const [gameOn, setGameOn] = useState(true)
 
   return (
     <ImageBackground
@@ -26,6 +40,13 @@ export default function HomeScreen() {
     >
       <View style={styles.bird__container}>
         <Image source={require("../../assets/images/redbird-upflap.png")} />
+      </View>
+
+      <View>
+        <Animated.Image
+          source={require("../../assets/images/pipe-green.png")}
+          style={[styles.pipe, animatedStyles]}
+        />
       </View>
     </ImageBackground>
   );
@@ -53,9 +74,12 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     justifyContent: "center",
   },
-  bird__container:{
-    position:'absolute',
-    left:width/4,
-    height:height/2
-  }
+  bird__container: {
+    position: "absolute",
+    left: width / 4,
+    height: height / 2,
+  },
+  pipe: {
+    position: "absolute",
+  },
 });
