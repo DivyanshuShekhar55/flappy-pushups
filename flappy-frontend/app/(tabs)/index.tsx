@@ -1,13 +1,16 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, ImageBackground } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { View } from 'react-native-reanimated/lib/typescript/Animated';
 
 export default function HomeScreen() {
   return (
-    <></>
+    <ImageBackground source={require('../../assets/images/background-day.png')} style={styles.background}>
+      
+    </ImageBackground>
   );
 }
 
@@ -28,4 +31,9 @@ const styles = StyleSheet.create({
     left: 0,
     position: 'absolute',
   },
+  background:{
+    flex:1,
+    resizeMode:'cover',
+    justifyContent:'center'
+  }
 });

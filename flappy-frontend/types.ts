@@ -3,14 +3,6 @@ export interface Bird {
   x_pos: number;
 }
 
-export interface Pipe {
-  x_pox: number;
-  y_pos: number;
-  vx: number;
-  height: number;
-  width: number;
-}
-
 export interface SharedValue<Value = unknown> {
   value: Value;
   addListener: (listenerID: number, listener: (value: Value) => void) => void;
@@ -20,3 +12,11 @@ export interface SharedValue<Value = unknown> {
     forceUpdate?: boolean
   ) => void;
 }
+
+export interface Pipe {
+    x_pox: SharedValue<number>;
+    y_pos: number;
+    vx: number;
+    height: number;
+    width: number;
+  }
