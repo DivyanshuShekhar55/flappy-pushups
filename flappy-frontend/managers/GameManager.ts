@@ -1,5 +1,14 @@
-import { Bird, Pipe, SharedValue } from "@/types";``
-import { withSequence, withTiming, Easing, withRepeat } from "react-native-reanimated";
+import { Bird, Pipe, SharedValue } from "@/types";
+``;
+import {
+  withSequence,
+  withTiming,
+  Easing,
+  withRepeat,
+  runOnUI,
+  runOnJS,
+  useDerivedValue,
+} from "react-native-reanimated";
 import { BirdManager } from "./BirdManager";
 
 export class GameManager {
@@ -11,27 +20,25 @@ export class GameManager {
   //@ts-ignore
   private pipe: Pipe;
   private isgameOver: boolean;
+  private pipeHeight: number;
+  screenHeight: number;
+  pipeX: SharedValue<number>;
 
   constructor(
     isCamera_access: boolean,
     bird: BirdManager,
+    pipeHeight: number,
+    screenHeight: number,
+    pipeX: SharedValue<number>
   ) {
     this.points = 0;
     isCamera_access = false;
     //@ts-ignore
     bird = new BirdManager();
     this.isgameOver = false;
-  }
-
-  movePipe(width: number, duration: number, pipeX:SharedValue<number>) {
-    pipeX.value = withRepeat(
-      withSequence(
-
-        withTiming(width, { duration: 0 }),
-        withTiming(-150, { duration: duration, easing: Easing.linear }),
-        withTiming(width, { duration: 0 })
-      ), 0
-    )
+    this.pipeHeight = pipeHeight;
+    this.screenHeight = screenHeight;
+    this.pipeX = pipeX;
   }
 
   get getScore(): number {
@@ -46,16 +53,31 @@ export class GameManager {
     }
   }
 
-  setGameOver(){
-    this.isgameOver=false;
+  setGameOver() {
+    this.isgameOver = false;
   }
 
-  get isGameOver(){
+  get isGameOver() {
     return this.isgameOver;
   }
 
-  generateRandomPipeHeight():number{
-    return 0
+  generateRandomPipeHeight(screenHeight: number): number {
+    let hgt = Math.floor(Math.random() * screenHeight * 0.6);
+    //top pipe has been given a max height of 60% screen height
+    console.log(hgt);
+    return hgt;
   }
-  
+
+  run(
+    width: number,
+    duration: number,
+    pipeX: SharedValue<number>,
+    screenHeight: number
+  ) {
+    // controls game when started...
+    console.log("from run function", this);
+    //this.movePipe(width, duration, pipeX, screenHeight);
+    //this.calculate_score()
+  }
 }
+

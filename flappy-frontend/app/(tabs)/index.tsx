@@ -7,39 +7,77 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { GameManager } from "@/managers/GameManager";
 import { BirdManager } from "@/managers/BirdManager";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
+  withRepeat,
+  withSequence,
+  Easing,
+  useDerivedValue,
+  runOnJS
 } from "react-native-reanimated";
-const { width, height } = useWindowDimensions();
-const bird = new BirdManager(width);
-const game = new GameManager(false, bird);
+
 
 export default function HomeScreen() {
+  const [isGameOver, setIsGameOver] = useState(false);
   const [gameOn, setGameOn] = useState(true);
+  const score = useRef(0);
+  const { width, height } = useWindowDimensions();
   const pipeX = useSharedValue(width);
+  const [nextPipeHeight, setNextPipeHeight] = useState(height / 4);
+  const bird = new BirdManager(width);
+  const game = new GameManager(false, bird, height / 4, height, pipeX);
+  const duration = 1600;
+  //setIsGameOver(game.isGameOver)
+
+  useEffect(() => {
+    if (!isGameOver) {
+      pipeX.value = withRepeat(
+        withSequence(
+          withTiming(width, { duration: 0 }),
+          withTiming(-150, { duration: duration, easing: Easing.linear },()=>{
+            let newHeight= Math.floor(Math.random() * height * 0.6);
+            runOnJS(setNextPipeHeight)(newHeight)
+          }),
+          withTiming(width, { duration: 0 })
+        ),
+        0
+      );
+    }
+  }, [isGameOver]);
 
   const animatedStyles = useAnimatedStyle(() => ({
     transform: [{ translateX: pipeX.value }],
+    height: nextPipeHeight,
   }));
-
-  useEffect(() => {
-    game.movePipe(width, 2000, pipeX)
-
-  }, [])
-  
 
   return (
     <ImageBackground
       source={require("../../assets/images/background-day.png")}
       style={styles.background}
     >
-      <View style={styles.bird__container}>
-        <Image source={require("../../assets/images/redbird-upflap.png")} />
+      {/* Score Display */}
+      <View></View>
+
+      <View
+        style={{
+          position: "absolute",
+          left: width / 4,
+          top: height / 2,
+          borderColor: "red",
+          borderWidth: 2,
+          height: 0.05 * height,
+        }}
+      >
+        <Image
+          source={require("../../assets/images/redbird-upflap.png")}
+          
+        />
       </View>
 
       <View>
@@ -53,33 +91,18 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
-  },
   background: {
     flex: 1,
     resizeMode: "cover",
     justifyContent: "center",
-  },
-  bird__container: {
-    position: "absolute",
-    left: width / 4,
-    height: height / 2,
+    position: "relative",
   },
   pipe: {
     position: "absolute",
+    bottom: -100,
+    borderWidth: 4,
+    borderColor: "red",
+    resizeMode:"stretch"
   },
+
 });
