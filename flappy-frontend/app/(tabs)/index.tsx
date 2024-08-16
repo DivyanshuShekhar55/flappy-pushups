@@ -38,7 +38,7 @@ export default function HomeScreen() {
   // WebSocket connection and message handling
   useEffect(() => {
     // const ws = new WebSocket('ws://10.0.2.2:6789');
-    const ws = new WebSocket('wss://107a-2401-4900-313c-f0e5-647c-d48e-6b44-9bf4.ngrok-free.app');
+    const ws = new WebSocket('wss://765a-223-231-204-142.ngrok-free.app');
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
