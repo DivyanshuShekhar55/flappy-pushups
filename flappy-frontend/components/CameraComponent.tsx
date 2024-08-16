@@ -1,5 +1,5 @@
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { useState } from 'react';
+import { CameraView, CameraType, useCameraPermissions, Camera } from 'expo-camera';
+import { useRef, useState } from 'react';
 import { Button, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const{width, height} = Dimensions.get('window')
 const aspectRatio = width/height
@@ -7,6 +7,8 @@ const aspectRatio = width/height
 export default function CameraComponent() {
   const [facing, setFacing] = useState<CameraType>('front');
   const [permission, requestPermission] = useCameraPermissions();
+  const [CapturedImage, setCapturedImage] = useState()
+  const cameraRef = useRef<CameraView>(null)
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -30,12 +32,38 @@ export default function CameraComponent() {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
   }
 
+  const takePicture =async()=>{
+    try {
+      //@ts-ignore
+        const photo = await cameraRef.current.takePictureAsync()
+        console.log(photo)
+        setCapturedImage(photo)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing={facing} >
-
+      <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+      <TouchableOpacity
+            onPress={takePicture}
+            style={{
+            width: 70,
+            position:'absolute',
+            height: 70,
+            bottom: 300,
+            borderRadius: 50,
+            backgroundColor: 'red',
+            zIndex:1000,
+            borderColor:'red'
+            }}
+            /> 
       </CameraView>
             <Text style={styles.text}>Flip Camera</Text>
+      <View>
+      
+      </View>
     </View>
   );
 }

@@ -39,7 +39,7 @@ export default function HomeScreen() {
 
   const BIRD_HEIGHT_PERCENT_TO_SCREEN = 0.05; //5% of screen height
   const BIRD_X_POS = width / 4;
-  const BIRD_Y_POS = height / 2;
+  const BIRD_Y_POS = useRef(height / 2);
 
   // // WebSocket connection and message handling
   // useEffect(() => {
@@ -84,7 +84,7 @@ export default function HomeScreen() {
     if (!isGameOver) {
       // score.current = game.run(width, height);
       update_score();
-      
+      detectCollision()
 
       pipeX.value = withRepeat(
         withSequence(
@@ -106,8 +106,10 @@ export default function HomeScreen() {
       );
     } else {
       cancelAnimation(pipeX)
-      router.navigate('../StartGame')
-      console.log("game over flow");
+      
+
+      //router.navigate('../StartGame')
+      console.log("gameover");
     }
   }, [isGameOver]);
 
@@ -118,13 +120,13 @@ export default function HomeScreen() {
         score.current++;
       }
     }, PIPE_SPEED);
-    // to cover 75% of screen as bird at width/4
+    // fix : to cover 75% of screen as bird at width/4hould be what??
   };
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      detectCollision();
-    }, 100); // Check for collision every 100ms (adjust as needed)
+      //detectCollision();
+    }, 33); // Check for collision every 33 (adjust as needed) around 30fps
   
     return () => {
       clearInterval(intervalId); // Clean up the interval on unmount or when game ends
@@ -135,20 +137,19 @@ export default function HomeScreen() {
     let withinPipeXBounds =
       BIRD_X_POS >= pipeX.value && BIRD_X_POS <= pipeX.value + PIPE_WIDTH;
      
-
-    let withinTopPipeYBounds = BIRD_Y_POS >= 0 && BIRD_Y_POS <= nextPipeHeight;
-
+    let withinTopPipeYBounds = BIRD_Y_POS.current >= 0 && BIRD_Y_POS.current <= nextPipeHeight;
 
     let withinBottomPipeYBounds =
-      BIRD_Y_POS >= nextPipeHeight + (2.9 * BIRD_HEIGHT_PERCENT_TO_SCREEN*height) &&
-      BIRD_Y_POS <= height;
-      // better if the factor 3 is multiplied with bird-height
+      BIRD_Y_POS.current >= nextPipeHeight + (2.9 * BIRD_HEIGHT_PERCENT_TO_SCREEN*height) &&
+      BIRD_Y_POS.current <= height;
+      // fix : 2.9 is a random magic number
 
     if (
       withinPipeXBounds &&
       (withinTopPipeYBounds || withinBottomPipeYBounds)
     ) {
       // console.log("hit detected");
+
       setIsGameOver(true);
     }
   };
@@ -188,8 +189,9 @@ export default function HomeScreen() {
           style={{
             position: "absolute",
             left: BIRD_X_POS,
-            top: height / 2,
+            top: BIRD_Y_POS.current,
             height: BIRD_HEIGHT_PERCENT_TO_SCREEN * height,
+            zIndex:999
           }}
         >
           <Image source={require("../../assets/images/redbird-upflap.png")} />
