@@ -1,14 +1,11 @@
+import React, { useEffect, useState, useRef } from "react";
 import {
   Image,
   StyleSheet,
-  Platform,
   ImageBackground,
-  Dimensions,
   useWindowDimensions,
   View,
 } from "react-native";
-import React, { useEffect, useState, useRef } from "react";
-
 import { GameManager } from "@/managers/GameManager";
 import { BirdManager } from "@/managers/BirdManager";
 import CameraComponent from "@/components/CameraComponent";
@@ -21,10 +18,13 @@ import Animated, {
   Easing,
   useDerivedValue,
   runOnJS,
+  cancelAnimation,
 } from "react-native-reanimated";
-import { Fragment } from "react";
 import Score from "@/components/Score";
 import { FONT_SIZE } from "@/components/Score";
+import { router } from "expo-router";
+
+const PIPE_WIDTH = 50;
 
 export default function HomeScreen() {
   const [isGameOver, setIsGameOver] = useState(false);
@@ -32,18 +32,59 @@ export default function HomeScreen() {
   const score = useRef(0);
   const { width, height } = useWindowDimensions();
   const pipeX = useSharedValue(width);
-  const [nextPipeHeight, setNextPipeHeight] = useState(height / 4);
+  const [nextPipeHeight, setNextPipeHeight] = useState(height /2.2);
   const bird = new BirdManager(width);
   const game = new GameManager(bird, height);
   const PIPE_SPEED = 1600; // in 1.6s it travels whole screen
-  const BIRD_HEIGHT_PERCENT_TO_SCREEN = 0.05; //5% of screen height
-  const BIRD_X_POS = width/4
 
+  const BIRD_HEIGHT_PERCENT_TO_SCREEN = 0.05; //5% of screen height
+  const BIRD_X_POS = width / 4;
+  const BIRD_Y_POS = height / 2;
+
+  // // WebSocket connection and message handling
+  // useEffect(() => {
+  //   // const ws = new WebSocket('ws://10.0.2.2:6789');
+  //   const ws = new WebSocket(
+  //     "wss://107a-2401-4900-313c-f0e5-647c-d48e-6b44-9bf4.ngrok-free.app"
+  //   );
+
+  //   ws.onopen = () => {
+  //     console.log("Connected to WebSocket server");
+  //   };
+
+  //   ws.onmessage = (event) => {
+  //     const message = event.data;
+  //     console.log("Received:", message);
+
+  //     // Handle the received coordinates here, if needed
+  //     // Example: Parsing the JSON message and updating state
+  //     try {
+  //       const data = JSON.parse(message);
+  //       console.log("Parsed JSON data:", data);
+  //       // Use the received data (e.g., update bird position)
+  //     } catch (error) {
+  //       console.error("Error parsing JSON:", error);
+  //     }
+  //   };
+
+  //   ws.onerror = (error) => {
+  //     console.error("WebSocket error:", error);
+  //   };
+
+  //   ws.onclose = () => {
+  //     console.log("WebSocket connection closed");
+  //   };
+
+  //   return () => {
+  //     ws.close();
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (!isGameOver) {
       // score.current = game.run(width, height);
       update_score();
+      
 
       pipeX.value = withRepeat(
         withSequence(
@@ -56,12 +97,17 @@ export default function HomeScreen() {
               const min = height * 0.2;
               let newHeight = Math.floor(Math.random() * (max - min) + min);
               runOnJS(setNextPipeHeight)(newHeight);
-            }
+            },
+            
           ),
           withTiming(width, { duration: 0 })
         ),
         0
       );
+    } else {
+      cancelAnimation(pipeX)
+      router.navigate('../StartGame')
+      console.log("game over flow");
     }
   }, [isGameOver]);
 
@@ -75,6 +121,37 @@ export default function HomeScreen() {
     // to cover 75% of screen as bird at width/4
   };
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      detectCollision();
+    }, 100); // Check for collision every 100ms (adjust as needed)
+  
+    return () => {
+      clearInterval(intervalId); // Clean up the interval on unmount or when game ends
+    };
+  }, [isGameOver, nextPipeHeight]);
+
+  const detectCollision = () => {
+    let withinPipeXBounds =
+      BIRD_X_POS >= pipeX.value && BIRD_X_POS <= pipeX.value + PIPE_WIDTH;
+     
+
+    let withinTopPipeYBounds = BIRD_Y_POS >= 0 && BIRD_Y_POS <= nextPipeHeight;
+
+
+    let withinBottomPipeYBounds =
+      BIRD_Y_POS >= nextPipeHeight + (2.9 * BIRD_HEIGHT_PERCENT_TO_SCREEN*height) &&
+      BIRD_Y_POS <= height;
+      // better if the factor 3 is multiplied with bird-height
+
+    if (
+      withinPipeXBounds &&
+      (withinTopPipeYBounds || withinBottomPipeYBounds)
+    ) {
+      // console.log("hit detected");
+      setIsGameOver(true);
+    }
+  };
 
   const animatedStyles = useAnimatedStyle(() => ({
     transform: [{ translateX: pipeX.value }, { rotateZ: "180deg" }],
@@ -84,7 +161,7 @@ export default function HomeScreen() {
   const animatedBottomStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: pipeX.value }],
     height:
-      height - nextPipeHeight - 3 * BIRD_HEIGHT_PERCENT_TO_SCREEN * height,
+      height - nextPipeHeight - (3 * BIRD_HEIGHT_PERCENT_TO_SCREEN * height),
     //i.e., leave 3 times the gap as of bird size
   }));
 
@@ -160,6 +237,7 @@ const styles = StyleSheet.create({
   pipe: {
     position: "absolute",
     resizeMode: "stretch",
+    width: PIPE_WIDTH,
   },
 
   topPipe: {
