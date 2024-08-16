@@ -35,4 +35,4 @@ if __name__ == "__main__":
             print("No coordinates available.")
 
         # Reduce the polling interval
-        time.sleep(0.05)  # Reduced polling interval in seconds
+        time.sleep(0.01666666)  # Reduced polling interval in seconds
