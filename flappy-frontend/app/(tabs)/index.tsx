@@ -36,6 +36,9 @@ export default function HomeScreen() {
   const bird = new BirdManager(width);
   const game = new GameManager(bird, height);
   const PIPE_SPEED = 1600; // in 1.6s it travels whole screen
+  const BIRD_HEIGHT_PERCENT_TO_SCREEN = 0.05; //5% of screen height
+  const BIRD_X_POS = width/4
+
 
   useEffect(() => {
     if (!isGameOver) {
@@ -68,17 +71,21 @@ export default function HomeScreen() {
       if (!isGameOver) {
         score.current++;
       }
-    }, PIPE_SPEED );
+    }, PIPE_SPEED);
     // to cover 75% of screen as bird at width/4
   };
 
+
   const animatedStyles = useAnimatedStyle(() => ({
-    transform: [{ translateX: pipeX.value}, {rotateZ:'180deg' }],
+    transform: [{ translateX: pipeX.value }, { rotateZ: "180deg" }],
     height: nextPipeHeight,
   }));
+
   const animatedBottomStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: pipeX.value}],
-    height: 200,
+    transform: [{ translateX: pipeX.value }],
+    height:
+      height - nextPipeHeight - 3 * BIRD_HEIGHT_PERCENT_TO_SCREEN * height,
+    //i.e., leave 3 times the gap as of bird size
   }));
 
   return (
@@ -93,7 +100,7 @@ export default function HomeScreen() {
             position: "absolute",
             top: 100,
             left: width / 2 - FONT_SIZE,
-            zIndex:1000
+            zIndex: 1000,
           }}
         >
           {/* Score Display */}
@@ -103,9 +110,9 @@ export default function HomeScreen() {
         <View
           style={{
             position: "absolute",
-            left: width / 4,
+            left: BIRD_X_POS,
             top: height / 2,
-            height: 0.05 * height,
+            height: BIRD_HEIGHT_PERCENT_TO_SCREEN * height,
           }}
         >
           <Image source={require("../../assets/images/redbird-upflap.png")} />
@@ -121,7 +128,7 @@ export default function HomeScreen() {
         <View>
           <Animated.Image
             source={require("../../assets/images/pipe-green.png")}
-            style={[styles.pipe, animatedBottomStyle, {bottom:-height}]}
+            style={[styles.pipe, animatedBottomStyle, { bottom: -height }]}
           />
         </View>
 
@@ -134,7 +141,7 @@ export default function HomeScreen() {
               height: height * 0.1,
               bottom: -height,
               resizeMode: "stretch",
-              width: width,       
+              width: width,
             }}
           ></Image>
         </View>
@@ -155,8 +162,8 @@ const styles = StyleSheet.create({
     resizeMode: "stretch",
   },
 
-  topPipe:{
-    top:0
+  topPipe: {
+    top: 0,
   },
 
   gameView: {
