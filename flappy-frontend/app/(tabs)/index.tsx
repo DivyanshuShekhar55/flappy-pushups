@@ -1,14 +1,11 @@
+import React, { useEffect, useState, useRef } from "react";
 import {
   Image,
   StyleSheet,
-  Platform,
   ImageBackground,
-  Dimensions,
   useWindowDimensions,
   View,
 } from "react-native";
-import { useEffect, useState, useRef } from "react";
-
 import { GameManager } from "@/managers/GameManager";
 import { BirdManager } from "@/managers/BirdManager";
 import Animated, {
@@ -18,10 +15,8 @@ import Animated, {
   withRepeat,
   withSequence,
   Easing,
-  useDerivedValue,
   runOnJS
 } from "react-native-reanimated";
-
 
 export default function HomeScreen() {
   const [isGameOver, setIsGameOver] = useState(false);
@@ -33,16 +28,52 @@ export default function HomeScreen() {
   const bird = new BirdManager(width);
   const game = new GameManager(false, bird, height / 4, height, pipeX);
   const duration = 1600;
-  //setIsGameOver(game.isGameOver)
+
+  // WebSocket connection and message handling
+  useEffect(() => {
+    // const ws = new WebSocket('ws://10.0.2.2:6789');
+    const ws = new WebSocket('wss://107a-2401-4900-313c-f0e5-647c-d48e-6b44-9bf4.ngrok-free.app');
+
+    ws.onopen = () => {
+      console.log('Connected to WebSocket server');
+    };
+
+    ws.onmessage = (event) => {
+      const message = event.data;
+      console.log('Received:', message);
+
+      // Handle the received coordinates here, if needed
+      // Example: Parsing the JSON message and updating state
+      try {
+        const data = JSON.parse(message);
+        console.log('Parsed JSON data:', data);
+        // Use the received data (e.g., update bird position)
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isGameOver) {
       pipeX.value = withRepeat(
         withSequence(
           withTiming(width, { duration: 0 }),
-          withTiming(-150, { duration: duration, easing: Easing.linear },()=>{
-            let newHeight= Math.floor(Math.random() * height * 0.6);
-            runOnJS(setNextPipeHeight)(newHeight)
+          withTiming(-150, { duration: duration, easing: Easing.linear }, () => {
+            let newHeight = Math.floor(Math.random() * height * 0.6);
+            runOnJS(setNextPipeHeight)(newHeight);
           }),
           withTiming(width, { duration: 0 })
         ),
@@ -76,7 +107,6 @@ export default function HomeScreen() {
       >
         <Image
           source={require("../../assets/images/redbird-upflap.png")}
-          
         />
       </View>
 
@@ -102,7 +132,6 @@ const styles = StyleSheet.create({
     bottom: -100,
     borderWidth: 4,
     borderColor: "red",
-    resizeMode:"stretch"
+    resizeMode: "stretch",
   },
-
 });
