@@ -39,18 +39,14 @@ export default function HomeScreen() {
 
   const BIRD_HEIGHT_PERCENT_TO_SCREEN = 0.05; // 5% of screen height
   const BIRD_X_POS = width / 4;
-  const BIRD_Y_POS = height / 2;
+  const BIRD_Y_POS = useRef(height / 2);
 
-  const birdY = useSharedValue(BIRD_Y_POS);
-  const animatedBirdStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: birdY.value - BIRD_Y_POS }],
-  }));
 
   // WebSocket connection and message handling
   useEffect(() => {
     // const ws = new WebSocket('ws://10.0.2.2:6789');
     const ws = new WebSocket(
-      "wss:///000d-106-221-156-137.ngrok-free.app"
+      "wss://107a-2401-4900-313c-f0e5-647c-d48e-6b44-9bf4.ngrok-free.app"
     );
 
     ws.onopen = () => {
@@ -61,14 +57,12 @@ export default function HomeScreen() {
       const message = event.data;
       console.log("Received:", message);
 
+      // Handle the received coordinates here, if needed
+      // Example: Parsing the JSON message and updating state
       try {
         const data = JSON.parse(message);
         console.log("Parsed JSON data:", data);
-
-        if (data.y !== undefined) {
-          // Update BIRD_Y_POS with received y value
-          birdY.value = withTiming(data.y, { duration: 50 });
-        }
+        // Use the received data (e.g., update bird position)
       } catch (error) {
         console.error("Error parsing JSON:", error);
       }
@@ -91,6 +85,7 @@ export default function HomeScreen() {
     if (!isGameOver) {
       // score.current = game.run(width, height);
       update_score();
+      detectCollision()
 
       pipeX.value = withRepeat(
         withSequence(
@@ -110,9 +105,11 @@ export default function HomeScreen() {
         0
       );
     } else {
-      cancelAnimation(pipeX);
-      router.navigate('../StartGame');
-      console.log("game over flow");
+      cancelAnimation(pipeX)
+      
+
+      //router.navigate('../StartGame')
+      console.log("gameover");
     }
   }, [isGameOver]);
 
@@ -123,9 +120,8 @@ export default function HomeScreen() {
         score.current++;
         requestAnimationFrame(update);
       }
-    };
-
-    requestAnimationFrame(update);
+    }, PIPE_SPEED);
+    // fix : to cover 75% of screen as bird at width/4hould be what??
   };
 
 
@@ -133,8 +129,8 @@ export default function HomeScreen() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       //detectCollision();
-    }, 50); // Check for collision every 100ms (adjust as needed)
-
+    }, 33); // Check for collision every 33 (adjust as needed) around 30fps
+  
     return () => {
       clearInterval(intervalId); // Clean up the interval on unmount or when game ends
     };
@@ -143,17 +139,20 @@ export default function HomeScreen() {
   const detectCollision = () => {
     let withinPipeXBounds =
       BIRD_X_POS >= pipeX.value && BIRD_X_POS <= pipeX.value + PIPE_WIDTH;
-
-    let withinTopPipeYBounds = birdY.value >= 0 && birdY.value <= nextPipeHeight;
+     
+    let withinTopPipeYBounds = BIRD_Y_POS.current >= 0 && BIRD_Y_POS.current <= nextPipeHeight;
 
     let withinBottomPipeYBounds =
-      birdY.value >= nextPipeHeight + (2.9 * BIRD_HEIGHT_PERCENT_TO_SCREEN * height) &&
-      birdY.value <= height;
+      BIRD_Y_POS.current >= nextPipeHeight + (2.9 * BIRD_HEIGHT_PERCENT_TO_SCREEN*height) &&
+      BIRD_Y_POS.current <= height;
+      // fix : 2.9 is a random magic number
 
     if (
       withinPipeXBounds &&
       (withinTopPipeYBounds || withinBottomPipeYBounds)
     ) {
+      // console.log("hit detected");
+
       setIsGameOver(true);
     }
   };
@@ -189,19 +188,17 @@ export default function HomeScreen() {
           <Score points={score.current} />
         </View>
 
-        <Animated.View
-          style={[
-            {
-              position: "absolute",
-              left: BIRD_X_POS,
-              top: BIRD_Y_POS,
-              height: BIRD_HEIGHT_PERCENT_TO_SCREEN * height,
-            },
-            animatedBirdStyle
-          ]}
+        <View
+          style={{
+            position: "absolute",
+            left: BIRD_X_POS,
+            top: BIRD_Y_POS.current,
+            height: BIRD_HEIGHT_PERCENT_TO_SCREEN * height,
+            zIndex:999
+          }}
         >
           <Image source={require("../../assets/images/redbird-upflap.png")} />
-        </Animated.View>
+        </View>
 
         <View>
           <Animated.Image
