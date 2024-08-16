@@ -4,7 +4,7 @@ import { Button, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 're
 const{width, height} = Dimensions.get('window')
 const aspectRatio = width/height
 
-export default function App() {
+export default function CameraComponent() {
   const [facing, setFacing] = useState<CameraType>('front');
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -33,11 +33,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <CameraView style={styles.camera} facing={facing} >
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text>press me</Text>
-          </TouchableOpacity>
-        </View>
+
       </CameraView>
             <Text style={styles.text}>Flip Camera</Text>
     </View>
@@ -46,10 +42,9 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    position:'relative',
     justifyContent: 'center',
     backgroundColor:'white',
-    display:'flex'
+    display:'flex',
   },
   message: {
     textAlign: 'center',
